@@ -11,13 +11,18 @@ bolt_d = 3;
 setscrew_d = 2;
 
 // diameter of the shaft of the bushing
-bush_outer_d = 10;
+bush_outer_d = 16;
+
+bush_inner_d = 10;
 
 // diameter of the flange of the bushing
-bush_flange_d = 14;
+bush_flange_d = 20;
 
 // thickness of the flange of the bushing
-bush_flange_h = 2;
+bush_flange_h = 3;
+
+// length of the bushing tfrom the top of the flange to the end of the shaft
+bush_l = 10;
 
 // thickness of material used for all the layers, except for the layer which accomodates the bushing flange, and the lexan lids
 std_thickness = 4;
@@ -39,6 +44,18 @@ ramp_length = 40;
 
 
 $fn = 100;
+
+module bush() {
+	translate([0,0,std_thickness]) {
+		difference() {
+			union() {
+				cylinder(r = bush_flange_d/2, h = bush_flange_h);
+				translate([0,0,-(bush_l - bush_flange_h)]) {cylinder(r = bush_outer_d/2, h = (bush_l - bush_flange_h));}
+			}
+			translate([0,0,-(0.1 + bush_l - bush_flange_h)]) {cylinder(r = bush_inner_d/2, h = bush_l + 0.2);}
+		}
+	}
+}
 
 module fix_hole(tlate, thickness) {
 	hole_center = outer_d/2 - (wall_l/2);
@@ -75,11 +92,14 @@ module riser_hole(thickness) {
 	hole(r = riser_d/2, h = thickness);
 }
 
+function total_riser_width() = riser_sep * (barrel_count - 1);
+
+function riser_z() = outer_d/2 - wall_l - riser_d/2;
+
+function riser_y_size() = sqrt(riser_z() * riser_z() - (total_riser_width()/2)*(total_riser_width()/2));
+
 module riser_c(n) {
-	z = outer_d/2 - wall_l - riser_d/2;
-	total_width = riser_sep * (barrel_count - 1);
-	y = sqrt(z * z - (total_width/2)*(total_width/2));
-	translate([-total_width/2 + riser_sep * n, -y, 0]) {child(0);}
+	translate([-total_riser_width()/2 + riser_sep * n, -riser_y_size(), 0]) {child(0);}
 }
 
 module nth_riser_hole(n, thickness) {
@@ -109,7 +129,7 @@ module setscrew_holes(thickness) {
 module ramp_slot(n, thickness) {
 	hull() {
 		nth_riser_hole(n, thickness);
-		translate([0, ramp_length, 0]) {
+		translate([0, 2 * riser_y_size(), 0]) {
 			nth_riser_hole(n, thickness);
 		}
 	}
@@ -122,10 +142,13 @@ module ramp_slots(thickness) {
 }
 
 module base() {
-	difference() {
-		mag_disk(std_thickness);
-		bush_inner_hole(std_thickness);
-		setscrew_holes(std_thickness);
+	union() {
+		difference() {
+			mag_disk(std_thickness);
+			bush_inner_hole(std_thickness);
+			setscrew_holes(std_thickness);
+		}
+		bush();
 	}
 }
 
@@ -180,8 +203,9 @@ module magazine() {
 
 
 module ex(n) {
-	color ([0.2,0.5,0.5,0.2]) { translate([0, 0, n * outer_d/4 - outer_d]) { child(0); } }
+	color ([0.2,0.5,0.5,0.2]) { translate([0, 0, n * outer_d/4 - outer_d]) { for (i = [0 : $children-1]) { child(i); } } }
 }
+
 
 ex(0) { base(); }
 ex(1) { flange_disk(); }
