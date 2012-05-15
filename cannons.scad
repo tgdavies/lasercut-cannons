@@ -61,13 +61,17 @@ module fix_hole(tlate, thickness) {
 	}
 }
 
+module fix_holes(thickness) {
+	fix_hole([-1,0,0], thickness);
+	fix_hole([1,0,0], thickness);
+	fix_hole([0,1,0], thickness);
+	fix_hole([0,-1,0], thickness);
+}
+
 module mag_disk(thickness) {
 	difference() {
 		cylinder(r = outer_d/2, h = thickness);
-		fix_hole([-1,0,0], thickness);
-		fix_hole([1,0,0], thickness);
-		fix_hole([0,1,0], thickness);
-		fix_hole([0,-1,0], thickness);
+		fix_holes(thickness);
 	}
 };
 
@@ -194,6 +198,7 @@ module magazine() {
 				}
 			}
 			riser_holes(std_thickness);
+			fix_holes(std_thickness); // because the riser hull can impinge on these
 		}
 	}
 }
