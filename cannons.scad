@@ -149,7 +149,7 @@ module base() {
 			bush_inner_hole(std_thickness);
 			setscrew_holes(std_thickness);
 		}
-		bush();
+		//bush();
 	}
 }
 
@@ -214,8 +214,29 @@ module explode() {
 	}
 }
 
+module project() {
+	columns = floor(sqrt($children));
+	rows = floor($children / columns + 0.5);
+	for (row = [0 : rows-1]) {
+		for (column = [0 : columns-1]) {
+			translate([(outer_d+5)*column, (outer_d+5)*row,0]) {
+				projection(cut = true) child(row * columns + column);
+			}
+		}
+	}
+}
 
-explode() {
+//projection(cut = true) base();
+
+project() {
+	base();
+	manifold();
+	ramps();
+	magazine();
+}
+
+
+/*explode() {
 	base();	
 	flange_disk();	
 	manifold();	
@@ -223,4 +244,4 @@ explode() {
 	ramps();	
 	magazine();	
 	manifold_cover();
-}
+}*/
