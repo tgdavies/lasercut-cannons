@@ -39,9 +39,6 @@ riser_d = 6.25;
 // riser separation -- horizontal distance between adjacent riser centres
 riser_sep = 15;
 
-// length of ramp -- TODO calculate this
-ramp_length = 40;
-
 
 $fn = 100;
 
