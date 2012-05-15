@@ -31,13 +31,13 @@ std_thickness = 4;
 lexan_h = 1;
 
 // number of barrels
-barrel_count = 3;
+barrel_count = 4;
 
 // riser diameter
 riser_d = 6.25;
 
 // riser separation -- horizontal distance between adjacent riser centres
-riser_sep = 15;
+riser_sep = 10;
 
 
 $fn = 100;
@@ -204,15 +204,23 @@ module magazine() {
 }
 
 
-module ex(n) {
-	color ([0.2,0.5,0.5,0.2]) { translate([0, 0, n * outer_d/4 - outer_d]) { for (i = [0 : $children-1]) { child(i); } } }
+module explode() {
+	color ([0.2,0.5,0.5,0.3]) {
+		for (i = [0 : $children-1]) {
+			translate([0, 0, i * outer_d/4 - outer_d]) {
+				child(i);
+			}
+		}
+	}
 }
 
 
-ex(0) { base(); }
-ex(1) { flange_disk(); }
-ex(2) { manifold(); }
-ex(3) { manifold_cover(); }
-ex(4) { ramps(); }
-ex(5) { magazine(); }
-ex(6) { manifold_cover(); }
+explode() {
+	base();	
+	flange_disk();	
+	manifold();	
+	manifold_cover();	
+	ramps();	
+	magazine();	
+	manifold_cover();
+}
