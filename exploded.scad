@@ -1,7 +1,5 @@
 use <cannons.scad>
 
-barrel_count = 2;
-
 explode() {
 	base();	
 	flange_disk();	
