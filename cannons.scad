@@ -1,44 +1,4 @@
-// total diameter of the magazine
-outer_d = 75;
-
-// thickness of the magazine walls
-wall_l = 8;
-
-// diameter of the holes for the bolts which hold the layers of the magazine together
-bolt_d = 3;
-
-// diameter of the holes for the setscrews which position the rounds to be fired next
-setscrew_d = 2;
-
-// diameter of the shaft of the bushing
-bush_outer_d = 16;
-
-bush_inner_d = 10;
-
-// diameter of the flange of the bushing
-bush_flange_d = 20;
-
-// thickness of the flange of the bushing
-bush_flange_h = 3;
-
-// length of the bushing tfrom the top of the flange to the end of the shaft
-bush_l = 10;
-
-// thickness of material used for all the layers, except for the layer which accomodates the bushing flange, and the lexan lids
-std_thickness = 4;
-
-// thickness of lexan used for the manifold cover and the magazine cover
-lexan_h = 1;
-
-// number of barrels
-barrel_count = 4;
-
-// riser diameter
-riser_d = 6.25;
-
-// riser separation -- horizontal distance between adjacent riser centres
-riser_sep = 10;
-
+include <params.scad>
 
 $fn = 100;
 
@@ -81,6 +41,12 @@ module hole(r, h) {
 	}
 }
 
+module linear_extrude_hole(h) {
+	translate([0,0,-0.1]) {
+		linear_extrude(height = h + 0.2) {child(0);}
+	}
+}
+
 module bush_inner_hole(thickness) {
 	hole(r = bush_outer_d/2, h = thickness);
 }
@@ -99,8 +65,15 @@ function riser_z() = outer_d/2 - wall_l - riser_d/2;
 
 function riser_y_size() = sqrt(riser_z() * riser_z() - (total_riser_width()/2)*(total_riser_width()/2));
 
+function riser_x(n) =
+	-total_riser_width()/2 + riser_sep * n;
+
+// you could imagine a layout where riser ys differed
+function riser_y(n) =
+	-riser_y_size();
+
 module riser_c(n) {
-	translate([-total_riser_width()/2 + riser_sep * n, -riser_y_size(), 0]) {child(0);}
+	translate([riser_x(n), riser_y(n), 0]) {child(0);}
 }
 
 module nth_riser_hole(n, thickness) {
@@ -185,18 +158,30 @@ module ramps() {
 	}
 }
 
+module riser_hull() {
+	hull() {
+		for (i = [0, barrel_count - 1]) {
+			riser_c(i) {hole( r = riser_wall_l + riser_d/2, h = std_thickness); }
+		}
+	}
+}
+
+module magazine_hole() {
+	intersection() {
+		difference() {
+			hole( r = outer_d / 2 - wall_l, h = std_thickness);
+			riser_hull();
+		}
+		fillet_cylinder(std_thickness);
+		mirror([1,0,0]) { fillet_cylinder(std_thickness); }
+	}
+}
+
 module magazine() {
 	union() {
 		difference() {
 			mag_disk(std_thickness);
-			hole( r = outer_d / 2 - wall_l, h = std_thickness);
-		}
-		difference() {
-			hull() {
-				for (i = [0, barrel_count - 1]) {
-					riser_c(i) {cylinder( r = wall_l + riser_d/2, h = std_thickness); }
-				}
-			}
+			magazine_hole();
 			riser_holes(std_thickness);
 			fix_holes(std_thickness); // because the riser hull can impinge on these
 		}
@@ -205,7 +190,7 @@ module magazine() {
 
 
 module explode() {
-	color ([0.2,0.5,0.5,0.3]) {
+	color ([0.2,0.5,0.5,1]) {
 		for (i = [0 : $children-1]) {
 			translate([0, 0, i * outer_d/4 - outer_d]) {
 				child(i);
@@ -226,14 +211,49 @@ module project() {
 	}
 }
 
-//projection(cut = true) base();
 
-project() {
+function circle_contact(p1, p2, r1, r2) =
+	p1 + (p2 - p1)*(r1/(r1+r2));
+
+module fillet_cylinder(height) {
+// see http://paulbourke.net/geometry/2circle/
+// d = distance between center of magazine and center of riser(0)
+	rx = riser_x(0);
+	ry = riser_y(0);
+	d = sqrt(rx * rx + ry * ry);
+// r0 radius of circle centered on magazine intersecting centre of fillet circle
+	r0 = outer_d / 2 - wall_l - fillet_r;
+// r1 radius of circle centered on riser intersecting centre of fillet circle
+	r1 = riser_wall_l + riser_d/2 + fillet_r;
+	a = (r0*r0 - r1*r1 + d*d ) / (2 * d);
+	h = sqrt(r0*r0 - a*a);
+// p2 is the point between the intersections
+	p2 = [0,0] + a * [rx, ry] / d;
+// x3 and y3 is the centre of our circle
+	x3 = p2 * [1,0] + h * ry / d;
+	y3 = p2 * [0, 1] - h * rx / d;
+	echo("P3 = ", x3, ", ", y3);
+// now calculate the contact points between the fillet cylinder and the wall and the riser
+	c1 = circle_contact([x3, y3], [0,0], -fillet_r, outer_d / 2 - wall_l);
+	c2 = circle_contact([x3, y3], [rx, ry], fillet_r, riser_wall_l + riser_d/2);
+	diff = c1 - c2;
+	slope = (diff * [0,1])/(diff * [1, 0]);
+	union() {
+		translate([x3,y3,0]) {
+			hole(r = fillet_r, h = height);
+		}
+		linear_extrude_hole(h = height) {polygon(points = [c1 + [-100, -100 * slope], c2 + [100, 100 * slope], [0,100]]);}
+	}
+}
+
+magazine();
+
+/*project() {
 	base();
 	manifold();
 	ramps();
 	magazine();
-}
+}*/
 
 
 /*explode() {

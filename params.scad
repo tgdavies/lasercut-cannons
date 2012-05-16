@@ -5,6 +5,9 @@ outer_d = 75;
 // thickness of the magazine walls
 wall_l = 8;
 
+// thickness of the riser walls in the magazine
+riser_wall_l = 4;
+
 // diameter of the holes for the bolts which hold the layers of the magazine together
 bolt_d = 3;
 
@@ -32,10 +35,16 @@ std_thickness = 4;
 lexan_h = 1;
 
 // number of barrels
-barrel_count = 4;
+barrel_count = 3;
 
 // riser diameter
 riser_d = 6.25;
 
 // riser separation -- horizontal distance between adjacent riser centres
 riser_sep = 10;
+
+// radius of the filleting circle to smooth the magazine
+// this needs to be tweaked -- if you have a narrow riser hull (i.e. small
+// barrel_count/riser_sep), and you see flat sections,
+// increase fillet_r
+fillet_r = 10;
