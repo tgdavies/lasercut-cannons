@@ -232,7 +232,6 @@ module fillet_cylinder(height) {
 // x3 and y3 is the centre of our circle
 	x3 = p2 * [1,0] + h * ry / d;
 	y3 = p2 * [0, 1] - h * rx / d;
-	echo("P3 = ", x3, ", ", y3);
 // now calculate the contact points between the fillet cylinder and the wall and the riser
 	c1 = circle_contact([x3, y3], [0,0], -fillet_r, outer_d / 2 - wall_l);
 	c2 = circle_contact([x3, y3], [rx, ry], fillet_r, riser_wall_l + riser_d/2);
