@@ -190,13 +190,11 @@ module magazine() {
 
 
 module explode() {
-	color ([0.2,0.5,0.5,1]) {
 		for (i = [0 : $children-1]) {
 			translate([0, 0, i * outer_d/4 - outer_d]) {
 				child(i);
 			}
 		}
-	}
 }
 
 module project() {
