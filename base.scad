@@ -53,25 +53,32 @@ module frontback2d() {
 
 	}
 }
-//144
+//139
 module top2d() {
 	difference() {
 		topbottom2d();
-		translate([base_length/2, base_width/2, 0]) {circle(bush_outer_d);}
+		translate([base_length/2, base_width/2, 0]) {circle(bush_outer_d/2);}
 	}
 }
 
 module acc_side2d() {
 	difference() {
 		side2d();
-		translate([base_height/2, base_width/2, 0]) {circle(valve_diameter);}
+		translate([base_height/2, base_width/2, 0]) {circle(valve_diameter/2);}
 	}
 }
 
 module mpa7_side2d() {
 	difference() {
 		side2d();
-		translate([base_height/2, base_width/2, 0]) {circle(mpa7_diameter);}
+		translate([base_height/2, base_width/2, 0]) {circle(mpa7_diameter/2);}
+	}
+}
+
+module acc_mount_ring2d() {
+	difference() {
+		circle(acc_inner_d/2);
+		circle(valve_diameter/2);
 	}
 }
 
@@ -88,7 +95,12 @@ module bottom() {
 }
 
 module acc_side() {
+	union() {
 		translate([0,0,base_height]) { rotate(a=[0,90,0]) {to3d() { acc_side2d(); }}}
+		translate([-abs_thick,0,base_height]) { rotate(a=[0,90,0]) {to3d() {
+			translate([base_height/2, base_width/2]) {acc_mount_ring2d();}
+		}}}		
+	}
 }
 
 module mpa7_side() {

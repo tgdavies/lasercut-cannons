@@ -31,4 +31,6 @@ base_length = fingerable(bush_outer_d + abs_clearance * 2 + abs_thick * 2);
 
 base_width = fingerable(bush_outer_d + abs_clearance * 2 + abs_thick * 2);
 
-base_height = fingerable(acc_inner_d + abs_clearance * 2 + abs_thick * 2);
+base_height = fingerable(acc_outer_d);
+
+echo(Width = base_width, Length = base_length, Height = base_height);
