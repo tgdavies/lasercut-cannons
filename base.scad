@@ -53,7 +53,7 @@ module frontback2d() {
 
 	}
 }
-//139
+//147
 module top2d() {
 	difference() {
 		topbottom2d();
@@ -68,18 +68,8 @@ module acc_side2d() {
 	}
 }
 
-module mpa7_side2d() {
-	difference() {
-		side2d();
-		translate([base_height/2, base_width/2, 0]) {circle(mpa7_diameter/2);}
-	}
-}
-
-module acc_mount_ring2d() {
-	difference() {
-		circle(acc_inner_d/2);
-		circle(valve_diameter/2);
-	}
+module blank_side2d() {
+	side2d();
 }
 
 module to3d() {
@@ -95,16 +85,11 @@ module bottom() {
 }
 
 module acc_side() {
-	union() {
-		translate([0,0,base_height]) { rotate(a=[0,90,0]) {to3d() { acc_side2d(); }}}
-		translate([-abs_thick,0,base_height]) { rotate(a=[0,90,0]) {to3d() {
-			translate([base_height/2, base_width/2]) {acc_mount_ring2d();}
-		}}}		
-	}
+	translate([0,0,base_height]) { rotate(a=[0,90,0]) {to3d() { acc_side2d(); }}}	
 }
 
-module mpa7_side() {
-		translate([base_length - abs_thick,0,base_height]) { rotate(a=[0,90,0]) {to3d() { mpa7_side2d(); }}}
+module blank_side() {
+		translate([base_length - abs_thick,0,base_height]) { rotate(a=[0,90,0]) {to3d() { blank_side2d(); }}}
 }
 
 module front() {
@@ -115,13 +100,39 @@ module back() {
 		translate([0,base_width,0]) { rotate(a=[90,0,0]) {to3d() { frontback2d(); }}}
 }
 
-color([1,2,0,0.5]) {
-	union() {
-		top();
-		bottom();
-		acc_side();
-		mpa7_side();
-		front();
-		back();
+module mme_fix_hole(height) {
+		translate([0,0,-0.1]) {cylinder(r = mme_dt/2, h = height + 0.2);}
+}
+
+module mme_fix_holes(height) {
+		translate([end_to_mounting_hole + mme_lt, (mme_t-mme_tu)/2, 0]) { mme_fix_hole(height); }
+		translate([end_to_mounting_hole, (mme_t + mme_tu)/2, 0]) { mme_fix_hole(height); }
+}
+
+module mme_port() {
+	translate([0,0,-0.1]) {cylinder(r = port_diameter/2, h = 10.2);}
+}
+
+// positions of ports and fixing holes are estimates
+module mme32() {
+	difference() {
+		cube([105.6, 22.1, 35.1]);
+		mme_fix_holes(35.1);
+		translate([end_to_edge_of_port + port_diameter/2, side_to_edge_of_port + port_diameter/2, 0]) { mme_port(); }
+		translate([end_to_edge_of_port + port_diameter/2 + mme_lb, side_to_edge_of_port_2 + port_diameter/2, 0]) { mme_port(); }
+		translate([end_to_edge_of_top_port + port_diameter/2, side_to_edge_of_top_port + port_diameter/2, 35.1-10.0]) { mme_port(); }
 	}
+}
+union() {
+	color([1,2,0,0.5]) {
+		union() {
+			top();
+			bottom();
+			acc_side();
+			blank_side();
+			front();
+			back();
+		}
+	}
+	mme32();
 }
